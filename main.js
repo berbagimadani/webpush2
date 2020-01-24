@@ -22,7 +22,7 @@ async function triggerPushNotification() {
   if ('serviceWorker' in navigator) {
     
     const register = await navigator.serviceWorker.register('/webpush2/sw.js', {
-      scope: '/sw.js'
+      scope: ''
     });
 
     console.log('waiting for acceptance'); 

@@ -21,7 +21,7 @@ let isSubscribed = false;
 async function triggerPushNotification() {
   if ('serviceWorker' in navigator) {
     
-    const register = await navigator.serviceWorker.register('/webpush2/sw.js', {
+    const register = await navigator.serviceWorker.register('https://berbagimadani.github.io/webpush2/sw.js', {
       scope: '/'
     });
 

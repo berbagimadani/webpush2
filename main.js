@@ -21,7 +21,7 @@ let isSubscribed = false;
 async function triggerPushNotification() {
   if ('serviceWorker' in navigator) {
     
-    const register = await navigator.serviceWorker.register('/push1/sw.js', {
+    const register = await navigator.serviceWorker.register('/push2/sw.js', {
       scope: '/'
     });
 
@@ -85,7 +85,7 @@ function initializeUI() {
 if ('serviceWorker' in navigator && 'PushManager' in window) {
   console.log('Service Worker and Push is supported');
 
-  navigator.serviceWorker.register('/push1/sw.js')
+  navigator.serviceWorker.register('/push2/sw.js')
   .then(function(swReg) {
     console.log('Service Worker is registered', swReg);
 

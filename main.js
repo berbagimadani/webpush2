@@ -12,56 +12,33 @@ function urlBase64ToUint8Array(base64String) {
   }
   return outputArray;
 }
- 
+
+var b = document.createElement('button');
+b.setAttribute('content', 'test content');
+b.setAttribute('class', 'trigger-push');
+
 const publicVapidKey = 'BLhnOOnx7M5oQ6bi4lRQKeUMdgyNAcqjHXDPfRjgqynx4Ndtjtr-tsc5rRgYT_uFYn_sBhlqq1j1jv76HZwtoiA';
 
 const triggerPush = document.querySelector('.trigger-push');
 let isSubscribed = false;
+let wrapper;
 
-async function triggerPushNotification() {
-  if ('serviceWorker' in navigator) {
-    
-    const register = await navigator.serviceWorker.register('/webpush2/sw.js', {
-      scope: ''
-    });
-
-    console.log('waiting for acceptance'); 
-    const subscription = await register.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(publicVapidKey),
-      
-    });
-
-    console.log(JSON.stringify(subscription));
-
-    isSubscribed == true
-
-    console.log('acceptance complete');
-
-    /*await fetch('/subscribe', {
-     method: 'POST',
-      body: JSON.stringify(subscription),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });*/
-
-  } else {
-    console.error('Service workers are not supported in this browser');
-  }
+wrapper = document.getElementById("divWrapper");
+if(wrapper != null){
+  wrapper.appendChild(b);
 }
 
-triggerPush.addEventListener('click', () => {
-  triggerPushNotification().catch(error => console.error(error));
-});
 
+var classname = document.getElementsByClassName("trigger-push");
+for (var i = 0; i < classname.length; i++) {
+  classname[i].addEventListener('click', () => {
+    notifyMe()
+    //triggerPushNotification().catch(error => console.error(error));
+  });
+}
+ 
 function initializeUI() {
   
-  triggerPush.addEventListener('click', () => {
-    triggerPushNotification().catch(error => console.error(error));
-  });
-   
-
   // Set the initial subscription value
   swRegistration.pushManager.getSubscription()
   .then(function(subscription) {
@@ -73,19 +50,31 @@ function initializeUI() {
     para.innerHTML = JSON.stringify(subscription);
     document.getElementById("myDIV").appendChild(para);
 
-
     if (isSubscribed) {
       console.log('User IS subscribed.');
+      b.innerHTML = 'User IS subscribed.';
+      b.style.visibility = "hidden"; 
+       
     } else {
+
+    
+      b.innerHTML = 'User is NOT subscribed.';
+
+      wrapper = document.getElementById("divWrapper");
+      if(wrapper != null){
+        wrapper.appendChild(b);
+      }
+
       console.log('User is NOT subscribed.');
     }
   });
 }
 
+
 if ('serviceWorker' in navigator && 'PushManager' in window) {
   console.log('Service Worker and Push is supported');
 
-  navigator.serviceWorker.register('/webpush2/sw.js')
+  navigator.serviceWorker.register('/sw.js')
   .then(function(swReg) {
     console.log('Service Worker is registered', swReg);
 
@@ -97,5 +86,60 @@ if ('serviceWorker' in navigator && 'PushManager' in window) {
   });
 } else {
   console.warn('Push messaging is not supported');
-  triggerPush.textContent = 'Push Not Supported';
+  //triggerPush.textContent = 'Push Not Supported';
+}
+
+function notifyMe() {
+  // Let's check if the browser supports notifications
+  if (!("Notification" in window)) {
+    alert("This browser does not support desktop notification");
+  }
+
+  // Let's check whether notification permissions have already been granted
+  else if (Notification.permission === "granted") {
+    // If it's okay let's create a notification
+
+    subscribeUserToPush()
+    var notification = new Notification("Hi there!...");
+    
+  }
+
+  // Otherwise, we need to ask the user for permission
+  else if (Notification.permission !== "denied") {
+    Notification.requestPermission().then(function (permission) {
+      // If the user accepts, let's create a notification
+
+    subscribeUserToPush()
+      if (permission === "granted") { 
+        var notification = new Notification("Hi there!");
+      }
+    });
+  }
+
+  // At last, if the user has denied notifications, and you 
+  // want to be respectful there is no need to bother them any more.
+}
+
+function subscribeUserToPush() {
+
+  
+  console.log('waiting for acceptance'); 
+
+  return navigator.serviceWorker.register('/sw.js')
+  .then(function(registration) {
+    const subscribeOptions = {
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+    };   
+    return registration.pushManager.subscribe(subscribeOptions);
+  })
+  .then(function(pushSubscription) {
+    var para = document.createElement("P");
+    para.innerHTML = JSON.stringify(pushSubscription);
+    document.getElementById("myDIV").appendChild(para);
+    b.style.visibility = "hidden"; 
+
+    console.log('Received PushSubscription: ', JSON.stringify(pushSubscription));
+    return pushSubscription;
+  });
 }
